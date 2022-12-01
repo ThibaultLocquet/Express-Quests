@@ -27,23 +27,6 @@ const movies = [
 
 const database = require("./database");
 
-const postUsers = (req, res) => {
-  const { firstname, lastname, email, city, language } = req.body;
-
-  database
-    .query(
-      "INSERT INTO users(firstname, lastname, email, city, language) VALUES (?, ?, ?, ?, ?)",
-      [firstname, lastname, email, city, language]
-    )
-    .then(([result]) => {
-      res.location(`/api/users/${result.insertId}`).sendStatus(201);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send("Error saving the users");
-    });
-};
-
 const postMovie = (req, res) => {
   const { title, director, year, color, duration } = req.body;
 
@@ -91,6 +74,28 @@ const getMovieById = (req, res) => {
     });
 };
 
+const updateMovie = (req, res) => {
+  const id = parseInt(req.params.id);
+  const { title, director, year, color, duration } = req.body;
+
+  database
+    .query(
+      "update movies set title = ?, director = ?, year = ?, color = ?, duration = ? where id = ?",
+      [title, director, year, color, duration, id]
+    )
+    .then(([result]) => {
+      if (result.affectedRows === 0) {
+        res.status(404).send("Not Found");
+      } else {
+        res.sendStatus(204);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error editing the movie");
+    });
+};
+
 const getUsers = (req, res) => {
   database
     .query("select * from users")
@@ -121,6 +126,45 @@ const getUserById = (req, res) => {
     });
 };
 
+const postUsers = (req, res) => {
+  const { firstname, lastname, email, city, language } = req.body;
+
+  database
+    .query(
+      "INSERT INTO users(firstname, lastname, email, city, language) VALUES (?, ?, ?, ?, ?)",
+      [firstname, lastname, email, city, language]
+    )
+    .then(([result]) => {
+      res.location(`/api/users/${result.insertId}`).sendStatus(201);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error saving the users");
+    });
+};
+
+const updateUsers = (req, res) => {
+  const id = parseInt(req.params.id);
+  const { firstname, lastname, email, city, language } = req.body;
+
+  database
+    .query(
+      "update users set firstname = ?, lastname = ?, email = ?, city = ?, language = ? where id = ?",
+      [firstname, lastname, email, city, language, id]
+    )
+    .then(([result]) => {
+      if (result.affectedRows === 0) {
+        res.status(404).send("Not Found");
+      } else {
+        res.sendStatus(204);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("Error editing the user");
+    });
+};
+
 module.exports = {
   getMovies,
   getMovieById,
@@ -128,11 +172,6 @@ module.exports = {
   getUserById,
   postMovie,
   postUsers,
+  updateMovie,
+  updateUsers,
 };
-
-/*Créer une route GET /api/users, cette route doit renvoyer un statut 200 et une liste d'utilisateurs de la base de données au format json
-
-Créez une route GET /api/users/:id qui renverra uniquement l'utilisateur de la base de données correspondant à l'identifiant défini dans l'url
-S'il y a un utilisateur qui correspond aux paramètres, renvoie une réponse avec un statut 200 et l'utilisateur correspondant en tant qu'objet json
-Sinon, retourne un statut 404 avec un message "Not Found"
-Publie une URL d'un dépôt GitHub avec ton application complète comme solution.*/
